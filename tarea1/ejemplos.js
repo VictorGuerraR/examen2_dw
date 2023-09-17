@@ -2,11 +2,9 @@ import db from '../db_conection/db_conection.js'
 
 export const informacionEstudiantes = async (req, res) => {
   try {
-    let result = await db({ e: 'db_empresa.estudiantes' })
-      .innerJoin({ ts: 'db_empresa.tipos_sangre' },
-        'e.id_tipo_sangre', 'ts.id_tipo_sangre'
-      )
-    res.status(200).render('../views/index', { estudiantes: result });
+    let result = await db({ p: 'db_empresa.productos' })
+      .innerJoin({ m: 'db_empresa.marca' }, 'm.idMarca', 'p.idMarca')
+    res.status(200).render('../views/index', { productos: result });
   } catch (error) {
     res.status(500).json(error)
   }
@@ -14,8 +12,8 @@ export const informacionEstudiantes = async (req, res) => {
 
 export const formularioAddEstudiante = async (req, res) => {
   try {
-    let result = await db('db_empresa.tipos_sangre')
-    res.status(200).render('../views/add', { tiposDeSangre: result });
+    let result = await db('db_empresa.marca')
+    res.status(200).render('../views/add', { marcas: result });
   } catch (error) {
     res.status(500).json(error)
   }
@@ -40,11 +38,12 @@ export const endpointEstudiante = async (req, res) => {
 
 const createEstudianteFun = async (informacion) => {
   try {
+
     await db.transaction(async trx => {
-      let { carne, nombres, apellidos, direccion, telefono, correo_electronico, id_tipo_sangre, fecha_nacimiento } = informacion;
-      let valores = { carne, nombres, apellidos, direccion, telefono, correo_electronico, id_tipo_sangre, fecha_nacimiento }
-      return await trx('db_empresa.estudiantes')
-        .insert(valores, ['id_estudiante'])
+      let { producto, idMarca, descripcion, precio_costo, precio_venta, existencia } = informacion;
+      let valores = { producto, idMarca, descripcion, precio_costo, precio_venta, existencia }
+      return await trx('db_empresa.productos')
+        .insert(valores, ['idProducto'])
     })
   } catch (error) {
     throw error;
@@ -54,11 +53,11 @@ const createEstudianteFun = async (informacion) => {
 const updateEstudianteFun = async (informacion) => {
   try {
     await db.transaction(async trx => {
-      let { carne, nombres, apellidos, direccion, telefono, correo_electronico, id_tipo_sangre, fecha_nacimiento } = informacion;
-      let valores = { carne, nombres, apellidos, direccion, telefono, correo_electronico, id_tipo_sangre, fecha_nacimiento }
-      return await trx('db_empresa.id_estudiante')
-        .update(valores, 'id_estudiante')
-        .where('id_estudiante', informacion.id_estudiante)
+      let { producto, idMarca, descripcion, precio_costo, precio_venta, existencia } = informacion;
+      let valores = { producto, idMarca, descripcion, precio_costo, precio_venta, existencia }
+      return await trx('db_empresa.productos')
+        .update(valores, 'idProducto')
+        .where('idProducto', informacion.idProducto)
     })
   } catch (error) {
     throw error;
@@ -68,9 +67,9 @@ const updateEstudianteFun = async (informacion) => {
 const deleteEstudianteFun = async (informacion) => {
   try {
     await db.transaction(async trx => {
-      return await trx('db_empresa.estudiantes')
+      return await trx('db_empresa.productos')
         .delete()
-        .where('id_estudiante', informacion.id_estudiante)
+        .where('idProducto', informacion.idProducto)
     })
   } catch (error) {
     throw error;
